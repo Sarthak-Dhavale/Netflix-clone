@@ -1,4 +1,4 @@
-name: Deploy to EC2
+name: 🚀 Deploy to EC2
 
 on:
   push:
@@ -6,23 +6,27 @@ on:
 
 jobs:
   deploy:
+    name: Deploy App to EC2
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: 🛒 Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Setup SSH key
+      - name: 🔐 Setup SSH Key
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
 
-      - name: Upload HTML file to EC2
+      - name: 📦 Upload HTML to EC2
         run: |
-          scp -i ~/.ssh/id_rsa netflix.html ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/tmp
+          scp -i ~/.ssh/id_rsa netflix.html ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/tmp/netflix.html
 
-      - name: Move HTML to web root
+      - name: 🚚 Move HTML to Web Root and Restart Nginx
         run: |
-          ssh -i ~/.ssh/id_rsa ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} 'sudo mv /tmp/netflix.html /var/www/html/index.html && sudo systemctl restart nginx'
+          ssh -i ~/.ssh/id_rsa ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+            sudo mv /tmp/netflix.html /var/www/html/index.html
+            sudo systemctl restart nginx
+          EOF
